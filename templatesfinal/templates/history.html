@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Search History{% endblock %}
+{% block nav_links %}
+<a href="/student/dashboard">Dashboard</a>
+<a href="/student/history">History</a>
+<a href="/student/logout" class="btn btn-outline">Logout</a>
+{% endblock %}
+{% block content %}
+<style>
+.history-page{padding:3rem 0;min-height:80vh}
+.page-header{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;padding:2rem;border-radius:16px;margin-bottom:2rem;text-align:center}
+.history-grid{display:grid;gap:1.5rem}
+.history-card{background:white;padding:1.5rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);transition:transform 0.2s}
+.history-card:hover{transform:translateY(-5px);box-shadow:0 6px 20px rgba(0,0,0,0.15)}
+.history-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;flex-wrap:wrap;gap:1rem}
+.history-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.5rem;margin-bottom:1rem;padding:1rem;background:#f8f9fa;border-radius:8px}
+.meta-item{font-size:0.9rem}.meta-label{font-weight:600;color:#666}.meta-value{color:var(--dark)}
+.colleges-list{margin-top:1rem}.college-item{padding:0.8rem;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center}
+.college-item:hover{background:#f8f9fa}
+.college-info h4{color:var(--primary);margin-bottom:0.3rem;font-size:1rem}
+.college-info p{color:#666;font-size:0.85rem;margin:0}
+.match-score{background:linear-gradient(135deg,#10b981,#059669);color:white;padding:0.4rem 0.8rem;border-radius:20px;font-size:0.85rem;font-weight:600}
+.date-badge{background:linear-gradient(135deg,#f59e0b,#d97706);color:white;padding:0.5rem 1rem;border-radius:20px;font-size:0.9rem}
+.empty-state{text-align:center;padding:3rem;color:#666}
+.empty-state i{font-size:4rem;margin-bottom:1rem;color:#e2e8f0}
+</style>
+<div class="container">
+<div class="history-page">
+<div class="page-header">
+<h1><i class="fas fa-history"></i> Your Search History</h1>
+<p>View all your college predictions and search history</p>
+</div>
+{% if predictions %}
+<div class="history-grid">
+{% for pred in predictions %}
+<div class="history-card">
+<div class="history-header">
+<h3><i class="fas fa-search"></i> Search #{{loop.index}}</h3>
+<span class="date-badge">{{pred.prediction_date}}</span>
+</div>
+<div class="history-meta">
+<div class="meta-item"><span class="meta-label">Rank:</span> <span class="meta-value">{{pred.rank}}</span></div>
+<div class="meta-item"><span class="meta-label">Category:</span> <span class="meta-value">{{pred.category}}</span></div>
+<div class="meta-item"><span class="meta-label">Quota:</span> <span class="meta-value">{{pred.quota or 'AI'}}</span></div>
+<div class="meta-item"><span class="meta-label">Pool:</span> <span class="meta-value">{{pred.pool or 'Gender-Neutral'}}</span></div>
+<div class="meta-item"><span class="meta-label">Round:</span> <span class="meta-value">{{pred.round_no or 6}}</span></div>
+<div class="meta-item"><span class="meta-label">Institute:</span> <span class="meta-value">{{pred.institute_type or 'All'}}</span></div>
+</div>
+<div class="colleges-list">
+<h4 style="margin-bottom:0.8rem;color:var(--dark)"><i class="fas fa-university"></i> Predicted Colleges ({{pred.colleges_list|length}})</h4>
+{% if pred.colleges_list %}
+{% for college in pred.colleges_list[:10] %}
+<div class="college-item">
+<div class="college-info">
+<h4>{{loop.index}}. {{college.college if college.college else college}}</h4>
+{% if college.program %}
+<p><strong>Program:</strong> {{college.program}} | <strong>Degree:</strong> {{college.degree}}</p>
+<p><strong>Rank Range:</strong> {{college.opening_rank}} - {{college.closing_rank}}</p>
+{% endif %}
+</div>
+{% if college.match_score %}
+<span class="match-score">{{college.match_score}}% Match</span>
+{% endif %}
+</div>
+{% endfor %}
+{% if pred.colleges_list|length > 10 %}
+<p style="text-align:center;color:#666;margin-top:0.5rem;font-style:italic">... and {{pred.colleges_list|length - 10}} more colleges</p>
+{% endif %}
+{% else %}
+<p style="color:#666;font-style:italic">No colleges found for this search</p>
+{% endif %}
+</div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+<i class="fas fa-search"></i>
+<h2>No Search History Yet</h2>
+<p>Start making predictions to build your search history!</p>
+<a href="/student/dashboard" class="btn btn-primary" style="margin-top:1rem"><i class="fas fa-magic"></i> Start Predicting</a>
+</div>
+{% endif %}
+</div>
+</div>
+{% endblock %}

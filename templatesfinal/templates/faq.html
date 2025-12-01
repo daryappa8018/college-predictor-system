@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}FAQ{% endblock %}
+{% block content %}
+<style>
+.faq-page{padding:3rem 0}
+.faq-item{background:white;padding:1.5rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);margin-bottom:1rem}
+.faq-item h3{color:var(--primary);margin-bottom:0.5rem}
+</style>
+<div class="container">
+<div class="faq-page">
+<h1 style="text-align:center;margin-bottom:2rem"><i class="fas fa-question-circle"></i> Frequently Asked Questions</h1>
+<div class="faq-item">
+<h3>How accurate are the predictions?</h3>
+<p>Our predictions are based on historical data from 2016-2024. While highly accurate, actual cutoffs may vary.</p>
+</div>
+<div class="faq-item">
+<h3>What is the 5-step fallback search?</h3>
+<p>If no colleges match your criteria, our system automatically tries different combinations of round, quota, pool, and institute type to find the best matches.</p>
+</div>
+<div class="faq-item">
+<h3>Can I see predictions for previous years?</h3>
+<p>Yes, registered users can view their complete search history with all previous predictions.</p>
+</div>
+<div class="faq-item">
+<h3>What's the difference between guest and registered users?</h3>
+<p>Guests get top 3 predictions. Registered users get top 30 predictions, search history, and PDF/Excel export options.</p>
+</div>
+<div class="faq-item">
+<h3>How do I interpret the match score?</h3>
+<p>Match score indicates how well your rank fits within the college's rank range. 100% means your rank is better than the opening rank.</p>
+</div>
+</div>
+</div>
+{% endblock %}

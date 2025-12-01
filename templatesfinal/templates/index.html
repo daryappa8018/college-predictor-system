@@ -1,0 +1,482 @@
+{% extends "base.html" %}
+
+{% block title %}College Predictor - Find Your Dream College{% endblock %}
+
+{% block nav_links %}
+<a href="/">Home</a>
+<a href="#features">Features</a>
+<a href="#how-it-works">How It Works</a>
+<a href="/student/login" class="btn btn-primary">Login</a>
+<a href="/student/register" class="btn btn-secondary">Sign Up</a>
+{% endblock %}
+
+{% block content %}
+<style>
+    .hero {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9)),
+                    url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1920') center/cover;
+        color: white;
+        padding: 6rem 0;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 900;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero p {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.95;
+    }
+
+    .prediction-form {
+        background: white;
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+        margin: -3rem auto 4rem;
+        position: relative;
+    }
+
+    .prediction-form h2 {
+        color: var(--dark);
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        text-align: left;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.9rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    #predictionResult {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+        display: none;
+    }
+
+    .result-success {
+        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        border-left: 4px solid var(--success);
+    }
+
+    .result-error {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        border-left: 4px solid var(--danger);
+    }
+
+    .features-section {
+        padding: 5rem 0;
+        background: white;
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 3rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .feature-card {
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 16px;
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-align: center;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card h3 {
+        margin-bottom: 1rem;
+        color: var(--dark);
+    }
+
+    .how-it-works {
+        padding: 5rem 0;
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    }
+
+    .steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .step {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .step-number {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0 auto 1rem;
+    }
+
+    .cta-section {
+        padding: 5rem 0;
+        text-align: center;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .cta-section h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .cta-section .btn {
+        margin: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .loading {
+        display: none;
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1>Find Your Dream College</h1>
+        <p>AI-powered predictions for JEE aspirants. Get instant college recommendations based on your rank.</p>
+    </div>
+</section>
+
+<!-- Guest Prediction Form -->
+<div class="container">
+    <div class="prediction-form">
+        <h2><i class="fas fa-search"></i> Quick College Prediction</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+            Try our predictor! Sign up for top 30 colleges and export features.
+        </p>
+        
+        <form id="guestPredictionForm">
+            <div class="form-group">
+                <label for="rank">Your JEE Rank *</label>
+                <input type="number" id="rank" name="rank" placeholder="Enter your rank" required min="1">
+            </div>
+            
+            <div class="form-group">
+                <label for="category">Category *</label>
+                <select id="category" name="category" required>
+                    <option value="">Select Category</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="quota">Quota</label>
+                <select id="quota" name="quota">
+                    <option value="AI">AI (All India)</option>
+                    {% for q in quotas %}
+                    <option value="{{ q }}">{{ q }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="pool">Gender Pool</label>
+                <select id="pool" name="pool">
+                    {% for p in pools %}
+                    <option value="{{ p }}">{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="round_no">Counseling Round</label>
+                <select id="round_no" name="round_no">
+                    <option value="1">Round 1</option>
+                    <option value="2">Round 2</option>
+                    <option value="3">Round 3</option>
+                    <option value="4">Round 4</option>
+                    <option value="5">Round 5</option>
+                    <option value="6" selected>Round 6</option>
+                    <option value="7">Round 7</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="institute_type">Institute Type (Optional)</label>
+                <select id="institute_type" name="institute_type">
+                    <option value="">All Institutes</option>
+                    {% for type in institute_types %}
+                    <option value="{{ type }}">{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <i class="fas fa-magic"></i> Get Top 3 Predictions
+            </button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing your options...</p>
+        </div>
+        
+        <div id="predictionResult"></div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<section class="features-section" id="features">
+    <div class="container">
+        <h2 class="section-title">Why Choose Us?</h2>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-brain"></i></div>
+                <h3>AI-Powered Predictions</h3>
+                <p>Advanced machine learning algorithms trained on historical JEE data for accurate predictions.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-list-ol"></i></div>
+                <h3>Top 30 Colleges</h3>
+                <p>Registered users get a comprehensive list of their best 30 college matches.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-file-export"></i></div>
+                <h3>Export Options</h3>
+                <p>Download your predictions as PDF or Excel files for offline reference.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-filter"></i></div>
+                <h3>IIT/NIT Filters</h3>
+                <p>Separate filtering for IIT and NIT colleges to find your perfect match.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-history"></i></div>
+                <h3>Prediction History</h3>
+                <p>Save and track all your predictions in your personal dashboard.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Secure & Private</h3>
+                <p>Your data is encrypted and secure. We respect your privacy.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works" id="how-it-works">
+    <div class="container">
+        <h2 class="section-title">How It Works</h2>
+        
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Enter Your Rank</h3>
+                <p>Provide your JEE Main/Advanced rank and category</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Get Predictions</h3>
+                <p>Our AI analyzes and matches you with best colleges</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Apply Filter</h3>
+                <p>Filter by IIT, NIT, or other preferences</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Export & Save</h3>
+                <p>Download your results and save for future reference</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Ready to Find Your Perfect College?</h2>
+        <p style="font-size: 1.2rem; margin-bottom: 2rem;">Join thousands of students who found their dream college with us!</p>
+        <a href="/student/register" class="btn btn-primary" style="background: white; color: var(--primary); font-size: 1.2rem; padding: 1rem 2rem;">
+            <i class="fas fa-user-plus"></i> Sign Up Free
+        </a>
+        <a href="/student/login" class="btn btn-outline" style="border-color: white; color: white; font-size: 1.2rem; padding: 1rem 2rem;">
+            <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+    </div>
+</section>
+
+<script>
+document.getElementById('guestPredictionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const form = e.target;
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('predictionResult');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    // Show loading
+    loading.style.display = 'block';
+    result.style.display = 'none';
+    submitBtn.disabled = true;
+    
+    const data = {
+        rank: parseInt(document.getElementById('rank').value),
+        category: document.getElementById('category').value,
+        quota: document.getElementById('quota').value,
+        pool: document.getElementById('pool').value,
+        round_no: parseInt(document.getElementById('round_no').value),
+        year: 2024,
+        institute_type: document.getElementById('institute_type').value || null
+    };
+    
+    try {
+        const response = await fetch('/predict_guest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const responseData = await response.json();
+        
+        loading.style.display = 'none';
+        result.style.display = 'block';
+        
+        if (responseData.success) {
+            const predictions = responseData.predictions;
+            result.className = 'result-success';
+            let collegesHTML = '';
+            predictions.forEach((pred, i) => {
+                collegesHTML += `
+                    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem; border-left: 4px solid var(--primary);">
+                        <h4 style="color: var(--primary); margin-bottom: 0.5rem;">${i+1}. ${pred.college}</h4>
+                        <p style="color: #666; margin-bottom: 0.3rem;"><strong>Program:</strong> ${pred.program}</p>
+                        <p style="color: #666; margin-bottom: 0.3rem;"><strong>Degree:</strong> ${pred.degree} | <strong>Type:</strong> ${pred.institute_type}</p>
+                        <p style="color: #666;"><strong>Rank Range:</strong> ${pred.opening_rank} - ${pred.closing_rank}</p>
+                        <span style="display:inline-block;background:linear-gradient(135deg,#10b981,#059669);color:white;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.85rem;margin-top:0.5rem;">${pred.match_score}% Match</span>
+                    </div>
+                `;
+            });
+            result.innerHTML = `
+                <h3 style="color: var(--success); margin-bottom: 1rem;">
+                    <i class="fas fa-check-circle"></i> Top ${predictions.length} Matches Found!
+                </h3>
+                ${collegesHTML}
+                <p style="color: #059669; font-weight: 600; margin-top: 1rem;">
+                    <i class="fas fa-info-circle"></i> ${responseData.message}
+                </p>
+                <div style="margin-top: 1rem;">
+                    <a href="/student/register" class="btn btn-primary">Sign Up for Top 30 Colleges & Export</a>
+                </div>
+            `;
+        } else {
+            result.className = 'result-error';
+            result.innerHTML = `
+                <h3 style="color: var(--danger);">
+                    <i class="fas fa-exclamation-triangle"></i> Oops!
+                </h3>
+                <p style="color: #666;">${responseData.error}</p>
+            `;
+        }
+        
+        submitBtn.disabled = false;
+    } catch (error) {
+        loading.style.display = 'none';
+        result.style.display = 'block';
+        result.className = 'result-error';
+        result.innerHTML = `
+            <h3 style="color: var(--danger);">
+                <i class="fas fa-exclamation-triangle"></i> Error
+            </h3>
+            <p style="color: #666;">Something went wrong. Please try again.</p>
+        `;
+        submitBtn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

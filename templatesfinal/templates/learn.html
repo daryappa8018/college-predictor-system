@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Learn{% endblock %}
+{% block content %}
+<style>
+.learn-page{padding:3rem 0}
+.topic-card{background:white;padding:2rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);margin-bottom:2rem}
+</style>
+<div class="container">
+<div class="learn-page">
+<h1 style="text-align:center;margin-bottom:2rem"><i class="fas fa-book"></i> Learning Resources</h1>
+<div class="topic-card">
+<h2>Understanding JEE Counseling</h2>
+<p>Learn about the JEE counseling process, rounds, and how seat allocation works.</p>
+</div>
+<div class="topic-card">
+<h2>Quota System Explained</h2>
+<ul>
+<li><strong>AI (All India):</strong> Open to all candidates across India</li>
+<li><strong>HS (Home State):</strong> Reserved for candidates from the same state</li>
+<li><strong>OS (Other State):</strong> For candidates from other states</li>
+</ul>
+</div>
+<div class="topic-card">
+<h2>Category Information</h2>
+<p>Understanding different categories: GEN, OBC-NCL, SC, ST, EWS, and PWD reservations.</p>
+</div>
+</div>
+</div>
+{% endblock %}

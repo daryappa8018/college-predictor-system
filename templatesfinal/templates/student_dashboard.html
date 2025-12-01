@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+{% block nav_links %}
+<a href="/student/dashboard">Dashboard</a>
+<a href="/student/history">History</a>
+<a href="/student/logout" class="btn btn-outline">Logout</a>
+{% endblock %}
+{% block content %}
+<style>
+.dashboard{padding:3rem 0;min-height:80vh}
+.welcome{background:white;padding:2rem;border-radius:16px;margin-bottom:2rem;box-shadow:0 4px 20px rgba(0,0,0,0.1)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2rem}
+.stat-card{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;padding:1.5rem;border-radius:12px;text-align:center}
+.stat-card h3{font-size:2rem;margin-bottom:0.5rem}
+.predictor-section{background:white;padding:2rem;border-radius:16px;margin-bottom:2rem;box-shadow:0 4px 20px rgba(0,0,0,0.1)}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem}
+.form-group{margin-bottom:1rem}.form-group label{display:block;margin-bottom:0.5rem;font-weight:600}
+.form-group input,.form-group select{width:100%;padding:0.8rem;border:2px solid #e2e8f0;border-radius:8px}
+.results-section{background:white;padding:2rem;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);display:none}
+.college-list{max-height:600px;overflow-y:auto;margin:1rem 0}
+.college-card{border:1px solid #e2e8f0;border-radius:8px;padding:1rem;margin-bottom:0.8rem;transition:transform 0.2s}
+.college-card:hover{transform:translateX(5px);border-color:var(--primary)}
+.match-badge{display:inline-block;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.85rem;font-weight:600;background:linear-gradient(135deg,#10b981,#059669);color:white}
+.export-buttons{display:flex;gap:1rem;margin-top:1rem;flex-wrap:wrap}
+.loading{display:none;text-align:center;padding:2rem}.spinner{border:4px solid #f3f3f3;border-top:4px solid var(--primary);border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;margin:0 auto}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+</style>
+<div class="container">
+<div class="dashboard">
+<div class="welcome"><h1>Welcome, {{user.name}}! 🎓</h1><p>Find your dream college with our advanced prediction system</p></div>
+<div class="predictor-section">
+<h2><i class="fas fa-search"></i> College Predictor</h2>
+<form id="predictForm">
+<div class="form-row">
+<div class="form-group"><label>Your Rank</label><input type="number" id="rank" required min="1"></div>
+<div class="form-group"><label>Category</label><select id="category" required><option value="">Select</option>{% for cat in categories %}<option value="{{cat}}">{{cat}}</option>{% endfor %}</select></div>
+<div class="form-group"><label>Quota</label><select id="quota"><option value="AI">AI (All India)</option>{% for q in quotas %}<option value="{{q}}">{{q}}</option>{% endfor %}</select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Gender Pool</label><select id="pool">{% for p in pools %}<option value="{{p}}">{{p}}</option>{% endfor %}</select></div>
+<div class="form-group"><label>Round</label><select id="round_no">{% for r in rounds %}<option value="{{r}}" {% if r == 6 %}selected{% endif %}>Round {{r}}</option>{% endfor %}</select></div>
+<div class="form-group"><label>Institute Type</label><select id="institute_type"><option value="">All</option>{% for type in institute_types %}<option value="{{type}}">{{type}}</option>{% endfor %}</select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Year</label><input type="number" id="year" value="2024" readonly></div>
+<div class="form-group"><label>Filter</label><select id="filter_type"><option value="all">All Colleges</option><option value="iit">IIT Only</option><option value="nit">NIT Only</option></select></div>
+</div>
+<button type="submit" class="btn btn-primary" style="width:100%"><i class="fas fa-magic"></i> Get Top 30 Predictions</button>
+</form>
+<div class="loading" id="loading"><div class="spinner"></div><p>Analyzing your options...</p></div>
+</div>
+<div class="results-section" id="resultsSection">
+<h2><i class="fas fa-trophy"></i> Your Top College Matches</h2>
+<div class="export-buttons">
+<button class="btn btn-primary" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> Download PDF</button>
+<button class="btn btn-secondary" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Download Excel</button>
+</div>
+<div class="college-list" id="collegeList"></div>
+</div>
+</div>
+</div>
+<script>
+let currentPredictions=[];
+document.getElementById('predictForm').addEventListener('submit',async(e)=>{
+e.preventDefault();
+const loading=document.getElementById('loading');
+const results=document.getElementById('resultsSection');
+const btn=e.target.querySelector('button');
+loading.style.display='block';results.style.display='none';btn.disabled=true;
+const data={rank:parseInt(document.getElementById('rank').value),category:document.getElementById('category').value,
+year:parseInt(document.getElementById('year').value),quota:document.getElementById('quota').value,
+pool:document.getElementById('pool').value,round_no:parseInt(document.getElementById('round_no').value),
+institute_type:document.getElementById('institute_type').value,filter_type:document.getElementById('filter_type').value};
+try{
+const res=await fetch('/student/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+const result=await res.json();
+loading.style.display='none';
+if(result.success){
+currentPredictions=result.predictions;
+displayResults(result.predictions);
+results.style.display='block';
+}else alert(result.error);
+btn.disabled=false;
+}catch(e){alert('Error: '+e.message);loading.style.display='none';btn.disabled=false;}
+});
+function displayResults(predictions){
+const list=document.getElementById('collegeList');
+list.innerHTML=predictions.map((p,i)=>`
+<div class="college-card">
+<div style="display:flex;justify-content:space-between;align-items:start">
+<div style="flex:1"><h3 style="color:var(--primary);margin-bottom:0.5rem">${i+1}. ${p.college}</h3>
+<p style="color:#666;margin-bottom:0.3rem"><strong>Program:</strong> ${p.program}</p>
+<p style="color:#666;margin-bottom:0.3rem"><strong>Degree:</strong> ${p.degree} | <strong>Type:</strong> ${p.institute_type}</p>
+<p style="color:#666"><strong>Opening:</strong> ${p.opening_rank} | <strong>Closing:</strong> ${p.closing_rank}</p></div>
+<span class="match-badge">${p.match_score}% Match</span>
+</div></div>`).join('');
+}
+async function exportPDF(){
+try{
+const res=await fetch('/student/export/pdf',{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({predictions:currentPredictions})});
+const blob=await res.blob();
+const url=window.URL.createObjectURL(blob);
+const a=document.createElement('a');a.href=url;a.download='college_predictions.pdf';a.click();
+}catch(e){alert('Export failed: '+e.message);}
+}
+async function exportExcel(){
+try{
+const res=await fetch('/student/export/excel',{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({predictions:currentPredictions})});
+const blob=await res.blob();
+const url=window.URL.createObjectURL(blob);
+const a=document.createElement('a');a.href=url;a.download='college_predictions.xlsx';a.click();
+}catch(e){alert('Export failed: '+e.message);}
+}
+</script>
+{% endblock %}
