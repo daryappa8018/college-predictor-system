@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Admin Login{% endblock %}
+{% block content %}
+<style>
+.admin-login{min-height:80vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e293b,#334155)}
+.login-box{background:white;padding:3rem;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:400px;width:100%}
+.login-box h2{text-align:center;color:var(--danger);margin-bottom:2rem}
+.form-group{margin-bottom:1.5rem}.form-group label{display:block;margin-bottom:0.5rem;font-weight:600}
+.form-group input{width:100%;padding:0.9rem;border:2px solid #e2e8f0;border-radius:8px}
+.form-group input:focus{outline:none;border-color:var(--danger)}
+</style>
+<div class="admin-login"><div class="login-box">
+<h2><i class="fas fa-shield-alt"></i> Admin Login</h2>
+<form id="adminLoginForm">
+<div class="form-group"><label>Admin Email</label><input type="email" id="email" required></div>
+<div class="form-group"><label>Password</label><input type="password" id="password" required></div>
+<button type="submit" class="btn btn-primary" style="width:100%;background:var(--danger)">Login as Admin</button>
+</form>
+<p style="text-align:center;margin-top:1rem;color:#666;font-size:0.9rem">Default: admin@college.com / Admin@123</p>
+</div></div>
+<script>
+document.getElementById('adminLoginForm').addEventListener('submit',async(e)=>{
+e.preventDefault();
+const btn=e.target.querySelector('button');btn.disabled=true;btn.textContent='Logging in...';
+const data={email:document.getElementById('email').value,password:document.getElementById('password').value};
+try{
+const res=await fetch('/admin/do_login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+const result=await res.json();
+if(result.success)window.location.href=result.redirect;
+else{alert(result.error);btn.disabled=false;btn.textContent='Login as Admin';}
+}catch(e){alert('Error: '+e.message);btn.disabled=false;btn.textContent='Login as Admin';}
+});
+</script>
+{% endblock %}

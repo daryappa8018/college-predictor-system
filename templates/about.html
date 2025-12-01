@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}About Us{% endblock %}
+{% block content %}
+<style>
+.about-page{padding:4rem 0;min-height:80vh}
+.hero-section{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;padding:3rem 2rem;border-radius:16px;text-align:center;margin-bottom:3rem}
+.content-section{background:white;padding:2rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);margin-bottom:2rem}
+</style>
+<div class="container">
+<div class="about-page">
+<div class="hero-section">
+<h1><i class="fas fa-graduation-cap"></i> About College Predictor System</h1>
+<p style="font-size:1.2rem;margin-top:1rem">Helping JEE aspirants find their perfect college match</p>
+</div>
+<div class="content-section">
+<h2>Our Mission</h2>
+<p>We aim to simplify the college selection process for JEE aspirants by providing accurate, data-driven predictions based on historical admission data from 23 IITs and 31 NITs.</p>
+</div>
+<div class="content-section">
+<h2>What We Offer</h2>
+<ul style="line-height:2">
+<li><i class="fas fa-check-circle" style="color:var(--success)"></i> AI-powered college predictions</li>
+<li><i class="fas fa-check-circle" style="color:var(--success)"></i> Smart 5-step fallback search system</li>
+<li><i class="fas fa-check-circle" style="color:var(--success)"></i> Support for all quotas (AI, HS, OS, AP, GO, JK, LA)</li>
+<li><i class="fas fa-check-circle" style="color:var(--success)"></i> Gender-Neutral and Female-Only pool options</li>
+<li><i class="fas fa-check-circle" style="color:var(--success)"></li> Complete search history tracking</li>
+<li><i class="fas fa-check-circle" style="color:var(--success)"></i> PDF & Excel export options</li>
+</ul>
+</div>
+<div class="content-section">
+<h2>Data Coverage</h2>
+<p><strong>64,958 admission records</strong> from years 2016-2024, covering:</p>
+<ul>
+<li>23 IITs + 31 NITs</li>
+<li>10 categories (GEN, OBC-NCL, SC, ST, EWS, PWD variants)</li>
+<li>7 quota types</li>
+<li>7 counseling rounds</li>
+</ul>
+</div>
+</div>
+</div>
+{% endblock %}

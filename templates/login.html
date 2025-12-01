@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Student Login - College Predictor{% endblock %}
+{% block content %}
+<style>
+.auth-container{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:2rem 0}
+.auth-box{background:white;padding:3rem;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-width:450px;width:100%}
+.auth-box h2{text-align:center;margin-bottom:2rem;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.form-group{margin-bottom:1.5rem}.form-group label{display:block;margin-bottom:0.5rem;font-weight:600}
+.form-group input{width:100%;padding:0.9rem;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;transition:border-color 0.3s}
+.form-group input:focus{outline:none;border-color:var(--primary)}
+.error{color:var(--danger);font-size:0.9rem;margin-top:0.3rem;display:none}
+.text-center{text-align:center;margin-top:1.5rem}
+</style>
+<div class="container"><div class="auth-container"><div class="auth-box">
+<h2><i class="fas fa-user"></i> Student Login</h2>
+<form id="loginForm">
+<div class="form-group"><label>Email</label><input type="email" id="email" required><div class="error" id="emailError"></div></div>
+<div class="form-group"><label>Password</label><input type="password" id="password" required><div class="error" id="passwordError"></div></div>
+<button type="submit" class="btn btn-primary" style="width:100%">Login</button>
+</form>
+<div class="text-center"><p>Don't have an account? <a href="/student/register" style="color:var(--primary);font-weight:600">Sign Up</a></p></div>
+</div></div></div>
+<script>
+document.getElementById('loginForm').addEventListener('submit',async(e)=>{
+e.preventDefault();
+const btn=e.target.querySelector('button');btn.disabled=true;btn.textContent='Logging in...';
+const data={email:document.getElementById('email').value,password:document.getElementById('password').value};
+try{
+const res=await fetch('/student/do_login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+const result=await res.json();
+if(result.success)window.location.href=result.redirect;
+else{alert(result.error);btn.disabled=false;btn.textContent='Login';}
+}catch(e){alert('Error: '+e.message);btn.disabled=false;btn.textContent='Login';}
+});
+</script>
+{% endblock %}
